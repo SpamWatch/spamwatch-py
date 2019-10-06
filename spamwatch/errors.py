@@ -1,8 +1,11 @@
+"""Errors returned by the API"""
 from requests import Response
+
+from .types import Token
 
 
 class Error(Exception):
-    def __init__(self, req: Response):
+    def __init__(self, req: Response) -> None:
         self.status_code = req.status_code
         self.text = req.text
         self.url = req.url
@@ -18,5 +21,5 @@ class NotFoundError(Exception):
 
 
 class Forbidden(Exception):
-    def __init__(self, token):
+    def __init__(self, token: Token) -> None:
         Exception.__init__(self, f"Your tokens permission `{token.permission}` is not high enough.")

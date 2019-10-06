@@ -1,27 +1,29 @@
+"""Client class for the Wrapper."""
 import requests
 from requests import Response
-from typing import List, Dict, Tuple, Union
+from typing import Dict, List, Tuple, Union, Any
 
-from .errors import UnauthorizedError, Error, Forbidden, NotFoundError
-from .types import Token, Permission, Ban
+from .errors import Error, Forbidden, NotFoundError, UnauthorizedError
+from .types import Ban, Permission, Token
 
 
 class Client:
     """Client to interface with the SpamWatch API."""
+
     def __init__(self, token: str, *, host: str = 'https://api.spamwat.ch') -> None:
         """
         Args:
             token: The Authorization Token
             host: The API host. Defaults to the official API.
         """
-        self._token = token
         self._host = host
         self._session = requests.Session()
-        self._session.headers.update({"Authorization": f"Bearer {self._token}"})
+        self._session.headers.update({"Authorization": f"Bearer {token}"})
         self._token = self.get_self()
         self.permission = self._token.permission
 
-    def _make_request(self, path: str, method: str = 'get', **kwargs) -> Tuple[Dict, Response]:
+    def _make_request(self, path: str, method: str = 'get',
+                      **kwargs: Dict[Any, Any]) -> Tuple[Dict, Response]:
         """
         Make a request and handle errors
 
@@ -138,11 +140,11 @@ class Client:
         Args:
             data: List of Ban objects
         """
-        data = [{"id": d.id, "reason": d.reason} for d in data]
+        _data = [{"id": d.id, "reason": d.reason} for d in data]
         self._make_request(f'banlist', method='post',
-                           json=data)
+                           json=_data)
 
-    def get_ban(self, user_id, not_found_ok=False) -> Union[Ban, None]:
+    def get_ban(self, user_id: int, not_found_ok: bool = False) -> Union[Ban, None]:
         """Gets a ban
 
         Args:
@@ -161,7 +163,7 @@ class Client:
             else:
                 raise err
 
-    def delete_ban(self, user_id) -> None:
+    def delete_ban(self, user_id: int) -> None:
         """Remove a ban"""
         self._make_request(f'banlist/{user_id}', method='delete')
     # endregion

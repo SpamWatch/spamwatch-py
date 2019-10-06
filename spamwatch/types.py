@@ -1,5 +1,7 @@
+"""Types returned by the API"""
 from datetime import datetime
 from enum import Enum, auto
+from typing import Optional
 
 
 class Permission(Enum):
@@ -16,20 +18,20 @@ _permission_map = {
 
 
 class SpamWatchType:
-    def __str__(self):
+    def __str__(self) -> str:
         return f'<{self.__class__.__name__}: {self.__dict__}>'
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.__str__()
 
 
 class Token(SpamWatchType):
     id: int
-    permission: Permission
+    permission: Optional[Permission]
     token: str
     userid: int
 
-    def __init__(self, id, permission, token, userid):
+    def __init__(self, id: int, permission: str, token: str, userid: int) -> None:
         self.id = id
         self.permission = _permission_map.get(permission)
         self.token = token
@@ -42,7 +44,7 @@ class Ban(SpamWatchType):
     date: datetime
     timestamp: int
 
-    def __init__(self, id, reason, date=0):
+    def __init__(self, id: int, reason: str, date: int = 0) -> None:
         self.id = id
         self.reason = reason
         self.date = datetime.fromtimestamp(date)
