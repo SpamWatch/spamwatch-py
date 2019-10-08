@@ -144,12 +144,11 @@ class Client:
         self._make_request(f'banlist', method='post',
                            json=_data)
 
-    def get_ban(self, user_id: int, not_found_ok: bool = False) -> Union[Ban, None]:
+    def get_ban(self, user_id: int) -> Union[Ban, bool]:
         """Gets a ban
 
         Args:
             user_id: ID of the user
-            not_found_ok: Return None on 404 not found (user not banned)
 
         Returns: Ban object or None
 
@@ -158,10 +157,7 @@ class Client:
             data, req = self._make_request(f'banlist/{user_id}')
             return Ban(**data)
         except NotFoundError as err:
-            if not_found_ok:
-                return
-            else:
-                raise err
+            return False
 
     def delete_ban(self, user_id: int) -> None:
         """Remove a ban"""
