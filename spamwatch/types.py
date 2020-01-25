@@ -30,12 +30,14 @@ class Token(SpamWatchType):
     permission: Optional[Permission]
     token: str
     userid: int
+    retired: bool
 
-    def __init__(self, id: int, permission: str, token: str, userid: int) -> None:
+    def __init__(self, id: int, permission: str, token: str, userid: int, retired: bool) -> None:
         self.id = id
         self.permission = _permission_map.get(permission)
         self.token = token
         self.userid = userid
+        self.retired = retired
 
 
 class Ban(SpamWatchType):
@@ -43,9 +45,11 @@ class Ban(SpamWatchType):
     reason: str
     date: datetime
     timestamp: int
+    admin: int
 
-    def __init__(self, id: int, reason: str, date: int = 0) -> None:
+    def __init__(self, id: int, reason: str, admin: int, date: int = 0) -> None:
         self.id = id
         self.reason = reason
         self.date = datetime.fromtimestamp(date)
         self.timestamp = date
+        self.admin = admin
