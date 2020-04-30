@@ -163,3 +163,13 @@ class Client:
         """Remove a ban"""
         self._make_request(f'banlist/{user_id}', method='delete')
     # endregion
+    
+    #region Stats
+    def stats(self) -> Dict[str, int]:
+        """Get ban stats"""
+        try:
+            data, req = self._make_request(f'stats')
+            return data
+        except NotFoundError as err:
+            return False
+    #endregion
