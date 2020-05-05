@@ -164,9 +164,9 @@ class Client:
         self._make_request(f'banlist/{user_id}', method='delete')
     # endregion
     
-    #region Stats
+    # region Stats
     def stats(self) -> Dict[str, int]:
         """Get ban stats"""
         data, req = self._make_request(f'stats')
         return data
-    #endregion
+    # endregion
