@@ -167,9 +167,6 @@ class Client:
     #region Stats
     def stats(self) -> Dict[str, int]:
         """Get ban stats"""
-        try:
-            data, req = self._make_request(f'stats')
-            return data
-        except NotFoundError as err:
-            return False
+        data, req = self._make_request(f'stats')
+        return data
     #endregion
