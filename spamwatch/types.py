@@ -46,10 +46,18 @@ class Ban(SpamWatchType):
     date: datetime
     timestamp: int
     admin: int
+    message: Optional[str]
 
-    def __init__(self, id: int, reason: str, admin: int, date: int = 0, **kwargs) -> None:
+    def __init__(self,
+                 id: int,
+                 reason: str,
+                 admin: int,
+                 date: int = 0,
+                 message: Optional[str] = None,
+                 **kwargs) -> None:
         self.id = id
         self.reason = reason
         self.date = datetime.fromtimestamp(date)
         self.timestamp = date
         self.admin = admin
+        self.message = message

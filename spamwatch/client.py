@@ -1,9 +1,11 @@
 """Client class for the Wrapper."""
+from json import JSONDecodeError
+from typing import Dict, List, Tuple, Union, Any, Optional
+
 import requests
 from requests import Response
-from typing import Dict, List, Tuple, Union, Any
 
-from .errors import Error, Forbidden, NotFoundError, UnauthorizedError
+from .errors import Error, Forbidden, NotFoundError, UnauthorizedError, TooManyRequests
 from .types import Ban, Permission, Token
 
 
@@ -23,7 +25,7 @@ class Client:
         self.permission = self._token.permission
 
     def _make_request(self, path: str, method: str = 'get',
-                      **kwargs: Dict[Any, Any]) -> Tuple[Dict, Response]:
+                      **kwargs: Dict[Any, Any]) -> Tuple[Union[Dict, str], Response]:
         """
         Make a request and handle errors
 
@@ -38,7 +40,10 @@ class Client:
         req = self._session.request(method, f'{self._host}/{path}',
                                     **kwargs)
         if req.status_code in [200, 201]:
-            return req.json(), req
+            try:
+                return req.json(), req
+            except JSONDecodeError:
+                return req.text, req
         if req.status_code == 204:
             return {}, req
         elif req.status_code == 401:
@@ -47,6 +52,8 @@ class Client:
             raise Forbidden(self._token)
         elif req.status_code == 404:
             raise NotFoundError()
+        elif req.status_code == 429:
+            raise TooManyRequests(path, req.json().get('until', 0))
         else:
             raise Error(req)
 
@@ -121,18 +128,32 @@ class Client:
         data, req = self._make_request('banlist')
         return [Ban(**ban) for ban in data]
 
-    def add_ban(self, user_id: int, reason: str) -> None:
+    def get_bans_min(self) -> List[int]:
+        data, req = self._make_request('banlist/all')
+
+        if data:
+            if isinstance(data, int):
+                return [data]
+            else:
+                return [int(uid) for uid in data.split('\n')]
+        else:
+            return []
+
+    def add_ban(self, user_id: int, reason: str, message: Optional[str] = None) -> None:
         """Adds a ban
 
         Args:
             user_id: ID of the banned user
             reason: Reason why the user was banned
         """
+        ban = {
+            "id": user_id,
+            "reason": reason
+        }
+        if message:
+            ban["message"] = message
         self._make_request(f'banlist', method='post',
-                           json=[{
-                               "id": user_id,
-                               "reason": reason
-                           }])
+                           json=[ban])
 
     def add_bans(self, data: List[Ban]) -> None:
         """Add a list of Bans
@@ -162,8 +183,9 @@ class Client:
     def delete_ban(self, user_id: int) -> None:
         """Remove a ban"""
         self._make_request(f'banlist/{user_id}', method='delete')
+
     # endregion
-    
+
     # region Stats
     def stats(self) -> Dict[str, int]:
         """Get ban stats"""
